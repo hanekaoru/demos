@@ -61,6 +61,7 @@ var xiaohong = {
 
 ```js
 var a = ["A", "B", "C"];
+
 for (var i in a) {
     alert(i);  // "0", "1", "2" （注意：类型为 String）
     alert(a[i]);  // "A", "B", "C"
@@ -70,19 +71,21 @@ for (var i in a) {
 
 ## Map
 
-Map是一组键值对的结构，具有极快的查找速度
+```Map``` 是一组键值对的结构，具有极快的查找速度
 
 ```js
 var m = new Map([["Michael", 95], ["Bob", 75], ["Tracy", 85]]);
+
 m.get("Michael"); // 95
 ```
 
-Map 结构的方法有：```.set```，```.get```，```.has```，```.delete```
+```Map``` 结构的方法有：```.set```，```.get```，```.has```，```.delete```
 
 一个 ```key``` 只能对应一个 ```value```，所以多次对一个 ```key``` 放入 ```value```，后面的值会把前面的值覆盖掉
 
 ```js
 var m = new Map();
+
 m.set("Adam", 67);
 m.set("Adam", 88);
 m.get("Adam"); // 88
@@ -108,7 +111,78 @@ var s2 = new Set([1, 2, 3]); // 含1, 2, 3
 * ```Set``` 结构的 ```has``` 方法，是用来查找**值**的，比如 ```Set.prototype.has(value)```、```WeakSet.prototype.has(value)```
 
 
+## iterable
 
+#### for ... of 循环和 for ... in 循环有何区别
+
+当我们手动给 ```Array``` 对象添加了额外的属性后，```for ... in``` 循环将带来意想不到的意外效果：
+
+```js
+var a = ["A", "B", "C"];
+
+a.name = "Hello";
+
+for (var x in a) {
+    alert(x); // "0", "1", "2", "name"
+}
+```
+
+```for ... in``` 循环将把 ```name``` 包括在内，但 ```Array``` 的 ```length``` 属性却不包括在内
+
+```for ... of``` 循环则完全修复了这些问题，它只循环集合本身的元素：
+
+```js
+var a = ["A", "B", "C"];
+
+a.name = "Hello";
+
+for (var x of a) {
+    alert(x); // "A", "B", "C"
+}
+```
+
+然而，更好的方式是直接使用 ```iterable``` 内置的 ```forEach``` 方法，它接收一个函数，每次迭代就自动回调该函数。以 ```Array``` 为例：
+
+```js
+var a = ["A", "B", "C"];
+
+a.forEach(function (element, index, array) {
+    // element 当前元素的值
+    // index 当前索引
+    // array 指向 Array 对象本身
+    console.log(element);
+})
+```
+
+```Set``` 与 ```Array``` 类似，但 ```Set``` 没有索引，因此回调函数的前两个参数都是元素本身：
+
+```js
+var s = new Set(["A", "B", "C"]);
+
+s.forEach(function (element, sameElement, set) {
+    console.log(element);
+})
+```
+
+```Map``` 的回调函数参数依次为 ```value```、```key``` 和 ```map``` 本身：
+
+```js
+var m = new Map([[1, "x"], [2, "y"], [3, "z"]]);
+
+m.forEach(function (value, key, map) {
+    console.log(value);
+})
+```
+
+如果对某些参数不感兴趣，可以忽略它们。例如只需要获得 ```Array``` 的 ```element```：
+
+```js
+var a = ["A", "B", "C"];
+
+a.forEach(function (element) {
+    console.log(element);
+})
+```
 
 
 
