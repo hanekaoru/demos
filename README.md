@@ -104,11 +104,20 @@ var s2 = new Set([1, 2, 3]); // 含1, 2, 3
 ```
 
 
+## Map 和 Set
+
+```Map``` 接受的参数为一个数组，数组内的成员是表示一个一个键值对的数组
+
+```Set``` 函数可以接受一个数组（或类似数组的对象）作为参数，用来初始化
+
 ```Map``` 和 ```Set``` 数据结构有一个 ```has``` 方法，需要注意与 ```includes``` 区分
 
 * ```Map``` 结构的 ```has``` 方法，是用来查找**键名**的，比如 ```Map.prototype.has(key)```、```WeakMap.prototype.has(key)```、```Reflect.has(target, propertyKey)```
 
 * ```Set``` 结构的 ```has``` 方法，是用来查找**值**的，比如 ```Set.prototype.has(value)```、```WeakSet.prototype.has(value)```
+
+
+
 
 
 ## iterable
