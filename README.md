@@ -194,7 +194,40 @@ a.forEach(function (element) {
 ```
 
 
+## 函数
 
+#### rest 参数
+
+rest 参数只能写在最后，前面用 ```...``` 标识
+
+```js
+// 接收任意个数参数，返回它们的和
+
+// 方法一
+function sum (...rest) {
+
+    var s = 0;
+
+    rest.forEach(function (x) {
+        s += x;
+    })
+
+    return s;
+    
+}
+
+// 方法二
+function sum (...rest) {
+
+    var s = 0;
+    
+    for (var i of rest) {
+        s += i;
+    }
+
+    return s;
+
+}
 
 
 
