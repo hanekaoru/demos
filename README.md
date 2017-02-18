@@ -198,7 +198,7 @@ a.forEach(function (element) {
 
 #### rest 参数
 
-rest 参数只能写在最后，前面用 ```...``` 标识
+```rest``` 参数只能写在最后，前面用 ```...``` 标识
 
 ```js
 // 接收任意个数参数，返回它们的和
@@ -228,19 +228,26 @@ function sum (...rest) {
     return s;
 
 }
+```
 
 
+## 方法
 
+#### 装饰器
 
+想统计一下代码一共调用了多少次 ```parseInt()```
 
+```js
+var count = 0;
+var oldParseInt = parseInt;  // 保存原函数
 
+window.parseInt = function () {
+    count++;
+    return oldParseInt.call(null, arguments);  // 调用原函数
+}
 
-
-
-
-
-
-
-
-
-
+parseInt("10");
+parseInt("20");
+parseInt("30");
+count;  // 3
+```
