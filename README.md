@@ -606,3 +606,29 @@ arr.sort(function (s1, s2) {
     return 0;
 }); // ["apple", "Google", "Microsoft"] 
 ```
+
+
+## 闭包
+
+#### 函数作为返回值
+
+在前面提到过利用 reduce 来对 Array 进行求和，但是如果不需要立即求和，而是在后面的代码中，根据需要在计算，这个时候就需要返回求和的函数
+
+```js
+function lazySum (arr) {
+    var sum = function () {
+        return arr.reduce(function (x, y) {
+            return x + y;
+        })
+    }
+
+    return sum;
+    
+}
+
+var f = lazySum([1, 2, 3, 4, 5]);  // function sum()
+
+f();  // 15
+```
+
+需要注意的是，当我们调用 ```lazySum()``` 的时候，每次调用都会返回一个新的函数，即使传入相同的参数，而且每次调用的结果互不影响
