@@ -557,3 +557,30 @@ var arr = ["adam", "LISA", "barT", "APpLe", "banNEr"];
 arr.map(function(str){return str[0].toUpperCase() + str.substring(1, str.length).toLowerCase()})
 
 ```
+
+
+
+#### filter
+
+和 map() 类似，简单的来说就是，map 是处理，而 filter 则是过滤
+
+```js
+var arr = ["A", "B", "C"];
+var r = arr.filter(function (element, index, self) {
+    console.log(element); // 依次打印"A", "B", "C"
+    console.log(index); // 依次打印0, 1, 2
+    console.log(self); // self就是变量arr
+    return true;
+});
+```
+
+数组去重
+
+```js
+var arr = ["apple", "strawberry", "banana", "pear", "apple", "orange", "orange", "strawberry"];
+
+arr.filter(function (element, index, self) {
+    return self.indexOf(element) === index;
+})
+
+```
