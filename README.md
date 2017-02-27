@@ -584,3 +584,25 @@ arr.filter(function (element, index, self) {
 })
 
 ```
+
+
+#### sort
+
+对于两个元素 ```x``` 和 ```y```，如果认为 ```x < y```，则返回 ```-1```，如果认为 ```x == y```，则返回 ```0```，如果认为 ```x > y```，则返回 ```1```
+
+对字符串排序，是按照ASCII的大小比较的，只要我们能定义出忽略大小写的比较算法就可以：
+
+```js
+var arr = ["Google", "apple", "Microsoft"];
+arr.sort(function (s1, s2) {
+    x1 = s1.toUpperCase();
+    x2 = s2.toUpperCase();
+    if (x1 < x2) {
+        return -1;
+    }
+    if (x1 > x2) {
+        return 1;
+    }
+    return 0;
+}); // ["apple", "Google", "Microsoft"] 
+```
