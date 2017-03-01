@@ -668,7 +668,29 @@ x => ({ foo: x })
 
 * 不可以使用 ```yield``` 命令，箭头函数不能用作 ```Generator``` 函数
 
+再次强调：
 
+```js
+let a = {
+    foo: 1,
+    bar: () => console.log(this.foo)
+}
+
+a.bar();  // undefined
+```
+
+以上代码中的 this 并不是指向 ```a``` 这个对象，对象 ```a``` 并不能构成一个作用域，所以在往上到达全局作用域，```this``` 就指向全局作用域
+
+```js
+let a = {
+  foo: 1,
+  bar: function () {
+      return () => this.foo + 1
+  }
+}
+
+a.bar()()  // 2
+```
 
 ## generator
 
