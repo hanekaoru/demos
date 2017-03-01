@@ -632,3 +632,76 @@ f();  // 15
 ```
 
 需要注意的是，当我们调用 ```lazySum()``` 的时候，每次调用都会返回一个新的函数，即使传入相同的参数，而且每次调用的结果互不影响
+
+
+
+
+## 箭头函数
+
+```js
+// 两个参数
+(x, y) => x * x + y * k
+
+// 无参数
+() => 3.14
+
+// 可变参数
+(x, y, ...rest) => {
+    var i, sum = x + y;
+    for (i = 0; i < rest.length; i++) {
+        sum += rest[i];
+    }
+    return sum;
+}
+
+// 如果是表达式，记得要用括号括起来，否则会报错
+x => ({ foo: x })
+```
+
+几点注意事项：
+
+* 函数体内的 ```this``` 对象就是定义时所在的对象，而不是使用时所在对象
+
+* 不可以当作构造函数使用，也就是不能用 ```new``` 命令实例化一个对象，否则会抛出一个错误
+
+* 不可以使用 ```arguments``` 对象，该对象在函数体内不存在，如果要用的话，可以用 ```rest``` 参数代替
+
+* 不可以使用 ```yield``` 命令，箭头函数不能用作 ```Generator``` 函数
+
+
+
+## generator
+
+```generator``` 跟函数很像
+
+```js
+function* foo (x) {
+    yield x + 1;
+    yield x + 2;
+    return x + 3;
+}
+```
+
+不同之处在于，除了 return，还可以使用 yield 返回多次
+
+调用 generator 对象有两个方法，一是不断地调用 generator 对象的 next() 方法
+
+```next()``` 方法会执行 ```generator``` 的代码，然后每次遇到 ```yield x;``` 就返回一个对象 ```{value: x, done: true/false}```，然后“暂停”。返回的 ```value``` 就是 ```yield``` 的返回值，```done``` 表示这个 ```generator``` 是否已经执行结束了。如果 ```done``` 为 ```true```，则 ```value``` 就是 ```return``` 的返回值。
+
+当执行到 ```done``` 为 ```true``` 时，这个 ```generator``` 对象就已经全部执行完毕，不要再继续调用 ```next()``` 了
+
+第二个方法是直接用 ```for ... of``` 循环迭代 ```generator``` 对象，这种方式不需要我们自己判断 ```done```
+
+另外一个巨大的好处，可以使异步回调代码变成"同步"代码：
+
+```js
+try {
+    r1 = yield ajax('url-1', data1);
+    r2 = yield ajax('url-2', data2);
+    r3 = yield ajax('url-3', data3);
+    success(r3);
+}
+catch (err) {
+    handle(err);
+}
+```
