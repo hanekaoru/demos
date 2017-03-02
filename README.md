@@ -708,7 +708,7 @@ function* foo (x) {
 
 调用 generator 对象有两个方法，一是不断地调用 generator 对象的 next() 方法
 
-```next()``` 方法会执行 ```generator``` 的代码，然后每次遇到 ```yield x;``` 就返回一个对象 ```{value: x, done: true/false}```，然后“暂停”。返回的 ```value``` 就是 ```yield``` 的返回值，```done``` 表示这个 ```generator``` 是否已经执行结束了。如果 ```done``` 为 ```true```，则 ```value``` 就是 ```return``` 的返回值。
+```next()``` 方法会执行 ```generator``` 的代码，然后每次遇到 ```yield x;``` 就返回一个对象 ```{value: x, done: true/false}```，然后"暂停"。返回的 ```value``` 就是 ```yield``` 的返回值，```done``` 表示这个 ```generator``` 是否已经执行结束了。如果 ```done``` 为 ```true```，则 ```value``` 就是 ```return``` 的返回值。
 
 当执行到 ```done``` 为 ```true``` 时，这个 ```generator``` 对象就已经全部执行完毕，不要再继续调用 ```next()``` 了
 
@@ -725,5 +725,174 @@ try {
 }
 catch (err) {
     handle(err);
+}
+```
+
+
+## 面向对象
+
+#### 原型继承
+
+```js
+function Student(props) {
+    this.name = props.name || "Unnamed";
+}
+
+Student.prototype.hello = function () {
+    alert("Hello, " + this.name + "!");
+}
+
+function PrimaryStudent(props) {
+    Student.call(this, props);
+    this.grade = props.grade || 1;
+}
+```
+
+现在 PrimaryStudent 创建的对象的原型是
+
+```js
+new PrimaryStudent() ----> PrimaryStudent.prototype ----> Object.prototype ----> null
+```
+
+必须把原型链修改为：
+
+```js
+new PrimaryStudent() ----> PrimaryStudent.prototype ----> Student.prototype ----> Object.prototype ----> null
+```
+
+这个时候就可以用一个空函数 F() 来用于桥接：
+
+```js
+// PrimaryStudent 构造函数
+function PrimaryStudent(props) {
+    Student.call(this, props);
+    this.grade = props.grade || 1;
+}
+
+// 空函数 F
+function F() { }
+
+// 把 F 的原型指向 Student.prototype
+F.prototype = Student.prototype;
+
+// 把 PrimaryStudent 的原型指向一个新的 F 对象，F 对象的原型正好指向 Student.prototype
+PrimaryStudent.prototype = new F();
+
+// 把 PrimaryStudent 原型的构造函数修复为 PrimaryStudent
+PrimaryStudent.prototype.constructor = PrimaryStudent;
+
+// 继续在 PrimaryStudent 原型（就是 new F() 对象）上定义方法
+PrimaryStudent.prototype.getGrade = function () {
+    return this.grade;
+};
+
+// 创建 xiaoming
+var xiaoming = new PrimaryStudent({
+    name: "小明",
+    grade: 2
+});
+
+xiaoming.name; // "小明"
+xiaoming.grade; // 2
+
+// 验证原型
+xiaoming.__proto__ === PrimaryStudent.prototype; // true
+xiaoming.__proto__.__proto__ === Student.prototype; // true
+
+// 验证继承关系
+xiaoming instanceof PrimaryStudent; // true
+xiaoming instanceof Student; // true
+```
+
+可以把这个模式封装起来，留以复用：
+
+```js
+function inherits(Child, Perent) {
+    var F = function () { };
+    F.prototype = Perent.prototype;
+    Child.prototype = new F();
+    Child.prototype.constructor = Child;
+}
+
+function Student(props) {
+    this.name = props.name || 'Unnamed';
+}
+
+Student.prototype.hello = function () {
+    alert('Hello, ' + this.name + '!');
+}
+
+function PrimaryStudent(props) {
+    Student.call(this, props);
+    this.grade = props.grade || 1;
+}
+
+// 实现原型继承链
+inherits(PrimaryStudent, Student);
+
+// 绑定其他方法到PrimaryStudent原型
+PrimaryStudent.prototype.getGrade = function () {
+    return this.grade;
+};
+```
+
+简单总结：
+
+* 定义新的构造函数，并在内部用 ```call()``` 调用希望"继承"的构造函数，并绑定 ```this```
+
+* 借助中间函数 ```F``` 实现原型链继承（```inherits```）
+
+* 继续在新的构造函数的原型上定义新方法
+
+
+
+#### class 继承
+
+```js
+class Student {
+    constructor (name) {
+        this.name = name;
+    }
+
+    hello () {
+        console.log("Hello " + this.name + "!");
+    }
+}
+
+var xiaoming = new Student("小明");
+xiaoming.hello()
+
+class PrimaryStudent extends Student {
+    constructor (name, grade) {
+        super(name);
+        this.grade = grade;
+    }
+
+    myGarder () {
+        console.log("I am at grade " + this.grade);
+    }
+}
+```
+
+练习：
+
+```js
+"use strict";
+
+class Animal {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+class Cat extends Animal {
+    constructor (name) {
+        super(name);
+        this.name = name;
+    }
+
+    say () {
+        return `Hello, ${this.name}!`
+    }
 }
 ```
