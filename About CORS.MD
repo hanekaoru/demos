@@ -9,3 +9,19 @@
 假设本域是 ```my.com```，外域是 ```sina.com```，只要响应头 ```Access-Control-Allow-Origin``` 为 ```http://my.com```，或者是 ```*```，本次请求就可以成功。
 
 可见，跨域能否成功，取决于对方服务器是否愿意给你设置一个正确的 ```Access-Control-Allow-Origin```，决定权始终在对方手中。
+
+![img](http://www.liaoxuefeng.com/files/attachments/00143640805071744d58164a40e42ef92b9973824451595000/l)
+
+上面这种跨域请求，称之为"简单请求"。简单请求包括 ```GET```、 ```HEAD``` 和 ```POST```（```POST``` 的 ```Content-Type``` 类型
+仅限 ```application/x-www-form-urlencoded```、 ```multipart/form-data``` 和 ```text/plain```），并且不能出现任何自定义头（例如， ```X-Custom: 12345``` ），通常能满足90%的需求。
+
+无论你是否需要用 ```JavaScript``` 通过 ```CORS``` 跨域请求资源，你都要了解 ```CORS``` 的原理。最新的浏览器全面支持 ```HTML5```。在引用外域资源时，除了 ```JavaScript``` 和 ```CSS``` 外，都要验证 ```CORS```。例如，当你引用了某个第三方 CDN 上的字体文件时：
+
+```css
+@font-face {
+    font-family: "FontAwesome";
+    src: url("http://cdn.com/fonts/fontawesome.ttf") format("truetype");
+}
+```
+
+如果该 ```CDN``` 服务商未正确设置 ```Access-Control-Allow-Origin```，那么浏览器无法加载字体资源。
