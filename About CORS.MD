@@ -25,3 +25,27 @@
 ```
 
 如果该 ```CDN``` 服务商未正确设置 ```Access-Control-Allow-Origin```，那么浏览器无法加载字体资源。
+
+
+
+对于 ```PUT```、```DELETE``` 以及其他类型如 ```application/json``` 的 ```POST``` 请求，在发送 ```AJAX``` 请求之前，浏览器会先发送一个 ```OPTIONS``` 请求（称为 ```preflighted``` 请求）到这个 ```URL``` 上，询问目标服务器是否接受：
+
+```
+OPTIONS /path/to/resource HTTP/1.1
+Host: bar.com
+Origin: http://my.com
+Access-Control-Request-Method: POST
+```
+
+服务器必须响应并明确指出允许的 ```Method```：
+
+```
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: http://my.com
+Access-Control-Allow-Methods: POST, GET, PUT, OPTIONS
+Access-Control-Max-Age: 86400
+```
+
+浏览器确认服务器响应的 ```Access-Control-Allow-Methods``` 头确实包含将要发送的 ```AJAX``` 请求的 ```Method```，才会继续发送 ```AJAX```，否则，抛出一个错误。
+
+由于以 ```POST```、```PUT``` 方式传送 ```JSON``` 格式的数据在 ```REST``` 中很常见，所以要跨域正确处理 ```POST``` 和 ```PUT``` 请求，服务器端必须正确响应 ```OPTIONS``` 请求。
