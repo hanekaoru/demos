@@ -1,4 +1,4 @@
-官方文档：http://underscorejs.org/#collections
+官方文档：http://underscorejs.org/
 
 ----
 
@@ -153,7 +153,7 @@ _.last(arr);  // 8
 
 #### flatten
 
-flatten() 接收一个 Array，无论这个 Array 里面嵌套了多少个 Array，flatten() 最后都会把他们变成一个一维数组
+```flatten()``` 接收一个 ```Array```，无论这个 ```Array``` 里面嵌套了多少个 ```Array```，```flatten()``` 最后都会把他们变成一个一维数组
 
 ```js
 _.flatten([1, [2], [3, [[4], [5]]]]);  // [1, 2, 3, 4, 5]
@@ -161,7 +161,7 @@ _.flatten([1, [2], [3, [[4], [5]]]]);  // [1, 2, 3, 4, 5]
 
 #### zip / unzip
 
-zip() 把两个或多个数组的所有元素按**索引对齐**，然后**按索引合并成新数组**。例如，你有一个 Array 保存了名字，另一个 Array 保存了分数，现在，要把名字和分数给对上，用 zip() 轻松实现：
+```zip()``` 把两个或多个数组的所有元素按**索引对齐**，然后**按索引合并成新数组**。例如，你有一个 ```Array``` 保存了名字，另一个 ```Array``` 保存了分数，现在，要把名字和分数给对上，用 ```zip()``` 轻松实现：
 
 ```js
 var names = ["Adam", "Lisa", "Bart"];
@@ -171,7 +171,7 @@ var scores = [85, 92, 59];
 _.zip(names, scores);  // [["Adam", 85], ["Lisa", 92], ["Bart", 59]]
 ```
 
-unzip() 则是反过来
+```unzip()``` 则是反过来
 
 ```js
 var namesAndScores = [["Adam", 85], ["Lisa", 92], ["Bart", 59]];
@@ -182,7 +182,7 @@ _.unzip(namesAndScores);  // [["Adam", "Lisa", "Bart"], [85, 92, 59]]
 
 #### object
 
-与 zip() 类似，不过是把名字和分数直接对应为 Object
+与 ```zip()``` 类似，不过是把名字和分数直接对应为 ```Object```
 
 ```js
 var names = ["Adam", "Lisa", "Bart"];
@@ -195,7 +195,7 @@ _.object(names, scores);  // {Adam: 85, Lisa: 92, Bart: 59}
 
 #### range
 
-range() 可以快速生成一个序列，不再需要使用 for 循环实现，如果只传入一个参数，默认是从 0 开始
+```range()``` 可以快速生成一个序列，不再需要使用 ```for``` 循环实现，如果只传入一个参数，默认是从 ```0``` 开始
 
 ```js
 // 从 0 开始小于 10:
@@ -212,7 +212,138 @@ _.range(0, -10, -1); // [0, -1, -2, -3, -4, -5, -6, -7, -8, -9]
 ```
 
 
+## functions
+
+#### bind 
+
+同 ES5 中的 ```bind()``` 方法类似
+
+```js
+// 不使用 bind 的话，需要这样，直接使用的话会报错，因为直接调用 log() 传入的 this 指针是 undefined
+var log = console.log();
+
+// 调用 call 并传入 console 对象作为 this:
+log.call(console, "Hello, world!");
+```
+
+```bind()``` 可以帮我们把 ```console``` 对象直接绑定在 ```log()``` 的 ```this``` 指针上，以后调用 ```log()``` 就可以直接正常调用了
+
+```js
+var log = _.bind(condole.log, console);
+
+log("Hello, world!");
+```
 
 
 
+#### memoize
 
+如果一个函数调用开销很大，我们就希望把结果缓存下来，以便后续调用的时候直接获得结果
+
+```js
+function factorial (n) {
+
+    console.log("start calculate " + n + "!...");
+
+    var s = 1, i = n;
+    while (i > 1) {
+        s = s * i;
+        i --;
+    }
+
+    console.log(n + "! = " + s);
+    return s;
+
+}
+
+factorial(10);  // 3628800
+
+// start calculate 10!...
+// 10! = 3628800
+
+```
+
+使用 ```memoize()``` 就可以自动缓存函数计算的结果：
+
+```js
+var factorial = _.memoize(function (n) {
+
+    console.log("start calculate " + n + "!...");
+
+    var s = 1, i = n;
+    while (i > 1) {
+        s = s * i;
+        i --;
+    }
+
+    console.log(n + "! = " + s);
+
+    return s;
+})
+
+// 第一次调用:
+factorial(10); // 3628800
+// 注意控制台输出:
+// start calculate 10!...
+// 10! = 3628800
+
+// 第二次调用:
+factorial(10); // 3628800
+// 控制台没有输出
+```
+
+对于相同的调用，比如连续两次调用 ```factorial(10)```，第二次调用并没有计算，而是直接返回上次计算后缓存的结果。不过，当你计算 ```factorial(9)``` 的时候，仍然会重新计算。这个时候可以对 ```factorial()``` 进行改进，让其递归调用：
+
+```js
+var factorial = _.memoize(function (n) {
+
+    console.log('start calculate ' + n + '!...');
+
+    if (n < 2) {
+        return 1;
+    }
+
+    return n * factorial(n - 1);
+
+})
+
+factorial(10); // 3628800
+
+// 输出结果说明 factorial(1)~factorial(10) 都已经缓存了:
+// start calculate 10!...
+// start calculate 9!...
+// start calculate 8!...
+// start calculate 7!...
+// start calculate 6!...
+// start calculate 5!...
+// start calculate 4!...
+// start calculate 3!...
+// start calculate 2!...
+// start calculate 1!...
+
+factorial(9); // 362880
+// console无输出
+```
+
+
+#### once
+
+```once()``` 保证某个函数执行且仅执行一次，与 ```jQuery``` 中的 ```one()``` 方法类似
+
+
+#### delay
+
+```delay()``` 可以让一个函数延迟执行，效果和 ```serTimeout()``` 是一样的（与 ```jQuery``` 中的 ```delay()``` 方法类似）
+
+```js
+// 2 秒后调用 alert
+_.delay(alert, 2000);
+```
+
+如果要延迟调用的函数有参数，把参数也传进去
+
+```js
+var log = _.bind(console.log, conole);
+
+_.delay(log, 200, "Hello, world!");  // 2 秒后输出 Hello, world!
+```
