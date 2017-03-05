@@ -32,7 +32,7 @@ jQuery; // jQuery(selector, context)
 
 #### 针对表单元素
 
-:input：可以选择<input>，<textarea>，<select>和<button>
+```:input``` 可以选择 ```<input>```，```<textarea>```，```<select>```和```<button>```
 
 
 
