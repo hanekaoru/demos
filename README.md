@@ -896,3 +896,140 @@ class Cat extends Animal {
     }
 }
 ```
+
+
+
+## promise
+
+Promise 的主要作用就是用于封装异步操作，以便根据异步操作是否成功来进行后续的操作
+
+后续操作是通过 ```then()``` 和 ```catch()``` 来申明的，但是如何触发，以及应该触发成功还是失败呢？这就靠 ```resolve``` 和 ```reject``` 这两个函数了，在 Promise 对象产生时，它们是为作封装的函数的参数的，如下
+
+```js
+new Promise(function(resolve, reject) {
+    // ...
+});
+```
+
+先看一个例子，生成一个 0 ~ 2 之间的随机数，如果小于 1，则等待一段时间后返回成功，否则返回失败
+
+```js
+function test (resolve, reject) {
+    var timeOut = Math.random() * 2;
+    console.log("set timeOut to: " + timeOut + " seconds.")
+
+    setTimeout(function () {
+
+        // 如果执行成功
+        if (timeOut < 1) {
+            console.log("call resolve()...");
+            resolve("200 OK")
+
+        // 如果执行失败
+        } else {
+            console.log("call reject()...")
+            reject("timeOut in " + timeOut + " seconds.")
+        }
+    }, timeOut * 1000)
+}
+
+// 变量 p1 是一个 Promise 对象，它负责执行 test 函数
+var p1 = new Promise(test);
+
+// 如果成功，执行这个函数：
+var p2 = p1.then(function (result) {
+    console.log("成功：" + result);
+})
+
+// 当 test 函数执行失败时，我们告诉 Promise 对象
+var p3 = p1.catch(function (reason) {
+    console.log("失败：" + reason)
+})
+```
+
+Peomise 对象可以串联，所以上述代码可以简化为：
+
+```js
+new Promise(test).then(function (result) {
+    console.log("成功：" + result);
+}).catch(function (reason) {
+    console.log("失败：" + reason);
+});
+```
+
+Promise 最大的好处是在异步执行的流程中，把执行代码和处理结果的代码清晰地分离了：
+
+![img](http://www.liaoxuefeng.com/files/attachments/001436512391628944d5da9a5654a35b0ace38246f30b9c000/l)
+
+比如，有若干个异步任务，需要先做任务1，如果成功后再做任务2，任何任务失败则不再继续并执行错误处理函数：
+
+```js
+job1.then(job2).then(job3).catch(haneleError)
+```
+
+用 Promise 如何简化异步处理：
+
+```js
+// ajax 函数将返回 Promise 对象
+function ajax(method, url, data) {
+    var request = new XMLHttpRequest();
+    return new Promise(function (resolve, reject) {
+        request.onreadystatechange = function () {
+            if (request.readyState === 4) {
+                if (request.status === 200) {
+                    resolve(request.responseText);
+                } else {
+                    reject(request.status);
+                }
+            }
+        };
+        request.open(method, url);
+        request.send(data);
+    });
+}
+
+var p = ajax("GET", url);
+
+p.then(function (text) { // 如果 AJAX 成功，获得响应内容
+    console.log("成功")
+}).catch(function (status) { // 如果 AJAX 失败，获得响应代码
+    console.log("失败")
+});
+```
+
+
+
+#### Promise.all()
+
+```js
+var p1 = new Promise(function (resolve, reject) {
+    setTimeout(resolve, 500, "P1");
+});
+
+var p2 = new Promise(function (resolve, reject) {
+    setTimeout(resolve, 600, "P2");
+});
+
+// 同时执行p1和p2，并在它们都完成后执行then:
+Promise.all([p1, p2]).then(function (results) {
+    console.log(results); // 获得一个Array: ["P1", "P2"]
+});
+```
+
+
+
+#### Promise.race()
+
+```js
+var p1 = new Promise(function (resolve, reject) {
+    setTimeout(resolve, 500, "P1");
+});
+
+var p2 = new Promise(function (resolve, reject) {
+    setTimeout(resolve, 600, "P2");
+});
+
+Promise.race([p1, p2]).then(function (result) {
+    console.log(result); // "P1" / p2仍在继续执行，但执行结果将被丢弃
+});
+```
