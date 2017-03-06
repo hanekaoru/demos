@@ -15,7 +15,7 @@ _.map([1, 2, 3], (x) => x * x);  // [1, 4, 9]
 ```js
 "use strict"
 
-_.map( { a: 1, b: 2, c: 3 }, (v, k) => k + "=" + v);  // ["a=1", "b=2", "c=3"]
+_.map( { a: 1, b: 2, c: 3 }, (v, k) => k + " = " + v);  // ["a = 1", "b = 2", "c = 3"]
 ```
 
 
@@ -347,3 +347,146 @@ var log = _.bind(console.log, conole);
 
 _.delay(log, 200, "Hello, world!");  // 2 秒后输出 Hello, world!
 ```
+
+
+## Objects
+
+#### keys / allkeys
+
+```keys()``` 可以方便地返回一个 ```object``` 自身所有的 ```key```，但不包含从原型链继承下来的：
+
+```js
+function Student (name, age) {
+    this.name = name;
+    this.age = age;
+}
+
+var xiaoming = new Student("小明", 20);
+
+_.keys(xiaoming);  // ["name", "age"]
+```
+
+```allkeys()``` 除了 ```object``` 自身的 ```key```，还包含从原型链继承下来的：
+
+```js
+function Student (name, age) {
+    this.name = name;
+    this.age = age;
+}
+
+Student.prototype.school = "NO.1 Middle School";
+
+var xiaoming = new Student("小明", 20);
+
+_.allkeys(xiaoming);  // ["name", "age", "school"]
+```
+
+
+#### values
+
+和 ```keys()``` 类似，```values()``` 返回 ```object``` 自身但不包含原型链继承的所有值（注意：没有 ```allvalues()```）
+
+```js
+var obj = {
+    name: "小明",
+    age: 20
+}
+
+_.values(obj);  // ["小明", 20]
+```
+
+
+
+#### mapObject()
+
+是针对 ```object``` 的 ```map``` 版本：
+
+```js
+var obj = { a: 1, b: 2, c: 3 };
+
+// 需要注意的是，传入的函数名，value 在前，key 在后
+_.mapObject(obj, (v, k) => 100 + v);  // { a: 101, b: 102, c: 103 }
+```
+
+
+#### invert
+
+```invert()``` 把 ```object``` 的每个 ```key-value``` 互相交换，```key => value```，```value => key```
+
+```js
+var obj = {
+    Adam: 90,
+    Lisa: 85,
+    Bart: 59
+}
+
+_.invert(obj); // { "59": "Bart", "85": "Lisa", "90": "Adam" }
+```
+
+
+#### extend / extendOwn 
+
+可以把多个 ```object``` 的 ```key-value``` 合并到第一个 ```object``` **并返回**（可以参考 ```jQuery``` 的 ```extend()``` 方法）
+
+```js
+var a = {name: "Bob", age: 20};
+
+_.extend(a, {age: 15}, {age: 88, city: "WuHan"});  // {name: "Bob", age: 88, city: "WuHan"}
+
+// 变量 a 的内容也改变了
+a;  // {name: "Bob", age: 88, city: "WuHan"}
+```
+
+需要注意的是：如果有相同的 ```key```，后面的 ```object``` 的 ```value``` 将覆盖前面的 ```object``` 的 ```value```
+
+```extendOwn()``` 和 ```extend()``` 类似，但是获取属性的时候会忽略掉从原型链继承下来的属性
+
+
+#### clone
+
+如果我们要复制一个 ```object``` 对象，可以使用 ```clone()``` 方法，它会把原有对象的所有属性都赋值到新的对象中
+
+但是需要需要的是，```clone()``` 是 "浅复制"，即两个对象相同的 ```key``` 所引用的 ```value``` 其实是同一对象
+
+也就是说，修改其中一个的话，会影响到另外一个
+
+注意区分修改和重新赋值：
+
+* ```clone()``` 方法是浅拷贝，对象的引用是不同的，但是对象属性值的引用与原对象是一致的
+
+* 修改是改变原对象值的引用所指向的内存地址存储的值，此时原对象和复制得到的新对象的属性值引用还是原来的，并没有变化，所以这种修改是两个个对象的属性值都会变化
+
+* 重新赋值是开辟一个新的内存空间存新的值，这时候原对象属性值的引用已经不是之前的引用了，换句话说，这已经不是当时要复制的对象了，对之前复制得到的对象没有影响
+
+简单来说 ```Array``` 可变，所以是修改，```string``` 不可变，所以是重新赋值
+
+
+
+#### isEqual
+
+```isEqual()``` 是对两个 ```object``` 进行深度比较，如果内容完全相同，则返回 ```true```
+
+```js
+var o1 = { name: "Bob", skills: { AA: 90, BB: 99 }};
+var o2 = { name: "Bob", skills: { BB: 99, AA: 90 }};
+
+o1 === o2; // false
+_.isEqual(o1, o2); // true
+```
+
+其实也可以对 ```Array``` 进行比较：
+
+```js
+var o1 = ["Bob", { skills: ["AA", "BB"] }];
+var o2 = ["Bob", { skills: ["AA", "BB"] }];
+
+o1 === o2; // false
+_.isEqual(o1, o2); // true
+```
+
+
+
+
+
+
+
