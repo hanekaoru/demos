@@ -204,3 +204,49 @@ module.exports = function () { return "foo"; };
 ```
 
 总之，尽量使用 ```module.exports``` 来输出模块变量
+
+
+## 基本模块
+
+#### global
+
+在浏览器中的顶层对象是 window 对象，而在 Node.js 环境中，也有唯一的全局对象，就是 global
+
+可以据此来判断 javaScript 的执行环境：
+
+```js
+if (typeof (window) == "undefined") {
+    console.log("node.js");
+} else {
+    console.log("browser");
+}
+```
+
+#### process
+
+代表当前 Node.js 的进程
+
+如果我们想在下一次事件响应中执行代码，可以调用 process.nextTick()：
+
+```js
+process.nextTick(function () {
+    console.log("nextTick callback!");
+})
+
+console.log("nextTick was set!");
+
+// nextTick was set!
+// nextTick callback!
+```
+
+这说明传入 process.nextTick() 的函数不会立刻执行，而是要等到下一次事件循环
+
+如果我们响应 exit 事件，就可以在程序即将退出的的时候执行某个回调函数：
+
+```js
+process.on("exit", function (code) {
+    console.log("about to exit with code: " + code);
+})
+```
+
+
