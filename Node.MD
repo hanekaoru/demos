@@ -427,3 +427,110 @@ fs.stat("index.txt", function (err, stat) {
 
 
 
+## stream
+
+也就是所谓的 "流"，流是一种抽象的数据结构，同时也对应着一个名字：标准输入流（```stdin```）
+
+流的特点是数据是有序的，而且必须依次读取，或者依次写入，不能像 ```Array``` 那样随机定位
+
+在 ```Node.js``` 中，流是一个对象，我们只需要响应流的事件就可以了：
+
+* ```data``` 事件表示流的数据已经可以读取了
+
+* ```end``` 事件表示这个流已经到末尾了，没有数据可以读取了
+
+* ```error``` 事件表示出错
+
+```js
+"use strict"
+
+var fs = require("fs");
+
+// 打开一个流
+var rs = fs.createReadStream("index.txt", "utf-8");
+
+rs.on("data", function (chunk) {
+    console.log("DATA");
+    console.log(chunk);
+})
+
+rs.on("'end", function () {
+    console.log("END")
+})
+
+rs.on("error", function (err) {
+    console.log("ERROE: " + err);
+})
+```
+
+需要注意的是：```data``` 事件可能会有多次，每次传递的是流的一部分数据（```chunk```）
+
+关于 ```chunk```，如果需要读取一个 ```10G``` 的文件流，不可能一次把 ```10G``` 数据全部读入内存然后来传递，只能每次读取一部分，比如 ```10M```，这样，每个 ```chunk``` 就是 ```10M```
+
+要以流的形式写入文件，只需要不断的调用 ```write()``` 方法，最后以 ```end()``` 结束：
+
+```js
+"use strict"
+
+var fs = require("fs");
+
+var ws1 = fs.createWriteStream("index.txt", "utf-8");
+
+ws1.write("正在使用 stream 写入文本数据...\n");
+ws1.write("END");
+ws1.end();
+
+var ws2 = fs.createWriteStream("index2.txt", "utf-8");
+ws2.write(new Buffer("使用 Stream 写入二进制数据...\n"), "utf-8");
+ws2.write(new Buffer("END"), "utf-8");
+ws2.end()
+```
+
+所有可以读取的数据的流都继承自 ```stream.Readable```，所有可以写入的流都继承自 ```stream.Writable```
+
+
+
+#### pipe
+
+就像水管一样，两个流可以串联起来，一个 ```Readable``` 流和一个 ```Writable``` 流串联起来后，所有的数据自动从 ```Readable``` 流进入 ```Writable``` 流，这种操作就叫做 ```pipe```
+
+在 ```Node.js``` 中，```Readable``` 流有一个 ```pipe()``` 的方法，就是用来做这件事情的
+
+用 ```pipe()``` 把一个文件流和另一个文件流串起来，这样源文件的所有数据就自动写入到目标文件里了，所以，这实际上是一个复制文件的程序：
+
+```js
+"use strict"
+
+var fs = require("fs");
+
+var rs = fs.createReadStream("index.txt");
+var ws = fs.createWriteStream("index2.txt");
+
+rs.pipe(ws)
+```
+
+默认情况下，当 ```Readable``` 流的数据读取完毕，```end``` 事件触发后，将自动关闭 ```Writable``` 流，如果我们不希望关闭 ```Writable``` 流，需要传入参数：
+
+```js
+readable.pipe(writable, {end: false});
+```
+
+
+#### 如何 pipe 多次
+
+如果使用的方式是：
+
+```js
+fs.createReadStream("...").pipe(fs.createWriteStream("...")).pipe(fs.createWriteStream("..."))
+```
+
+这样是不行的，因为第一次 ```pipe``` 之后，返回的类型是 ```WriteStream```，而不再是 ```ReadStream```，所以需要：
+
+```js
+var f = fs.createReadStream("...")
+
+f.pipe(fs.createWriteStream("..."))
+f.pipe(fs.createWriteStream("..."))
+```
+
+
