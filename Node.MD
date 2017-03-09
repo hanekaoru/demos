@@ -252,3 +252,178 @@ process.on("exit", function (code) {
 ```
 
 
+## fs
+
+#### 异步读取文件
+
+```js
+"use strict"
+
+var fs = require("fs");
+
+fs.readFile("index.txt", "utf-8", function (err, data) {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log(data);
+    }
+})
+```
+
+正常读取的时候，```err``` 参数为 ```null```，```data``` 为读取到的的 ```String```
+
+当发生错误的时候，```err``` 参数代表一个错误对象，```data``` 为 ```undefined```
+
+下面是一个读取图片的例子：
+
+```js
+"use strict"
+
+var fs = require("fs");
+
+fs.readFile("index.png", function (err, data) {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log(data);
+        console.log(data.length + " bytes")
+    }
+})
+```
+
+当读取二进制文件的时候，不传入文件编码的情况下，回调函数的 ```data``` 参数将返回一个 ```Buffer``` 对象（就是一个**包含零个或任意字节的数组**，注意和 ```Array``` 不同）
+
+```Buffer``` 对象可以和 ```String``` 作转换：
+
+```js
+var text = data.toString("utf-8");
+
+console.log(text)
+```
+
+或者把一个 ```String``` 转换为 ```Buffer```
+
+```js
+var buf = new Buffer(text, "urf-8");
+
+console.log(buf)
+```
+
+
+#### 同步读取文件
+
+与异步函数相比，多了一个 ```Sync``` 后缀，并且不接收回调函数，函数直接返回结果
+
+```js
+"use strict"
+
+var fs = require("fs");
+
+var data = fs.readFileSync("index.txt", "utf-8");
+
+console.log(data)
+```
+
+如果同步文件发生错误，则需要用 ```try ... catch``` 捕获：
+
+```js
+try {
+    var data = fs.readFileSync("index,tex", data);
+
+    console.log(data)
+} catch (err) {
+    // ...
+}
+```
+
+
+#### 写入文件
+
+```js
+"use strict"
+
+var fs = require("fs");
+
+var data = "hello world"
+
+fs.writeFile("index.txt", data, function (err) {
+    if (err) {
+        console.log(err)
+    } else {
+        console.log("ok")
+    }
+})
+```
+
+如果传入的数据是 ```String```，默认按照 ```utf-8``` 编码写入文件，如果传入的参数是 ```Buffer```，则写入二进制文件
+
+但是有一点需要注意，```writeFile()``` 写入的时候，会先把文件清空，这个时候可以使用 ```fs.appendFile()```
+
+```js
+"use strict"
+
+var fs = require("fs");
+
+var data = "hello world"
+
+fs.appendFile("index.txt", data, function (err) {
+    if (err) {
+        console.log(err)
+    } else {
+        console.log("ok")
+    }
+})
+```
+
+与 ```readFile()``` 类似，```writeFile()``` 也有一个同步方法，为 ```writeFileSync()```
+
+
+#### stat
+
+如果我们要获取文件大小，创建时间等信息，可以使用 ```fs.stat()```，它返回一个 ```Stat``` 对象，包含文件或目录的详细信息：
+
+```js
+"use strict"
+
+var fs = require("fs");
+
+fs.stat("index.txt", function (err, stat) {
+    if (err) {
+        console.log(err)
+    } else {
+
+        // 是否是文件
+        console.log("isFile: " + stat.isFile());
+
+        // 是否是目录
+        console.log("isDirectory: " + stat.isDirectory())
+
+        if (stat.isFile()) {
+            
+            // 文件大小
+            console.log("Size: " + stat.size);
+
+            // 创建时间，Date 对象
+            console.log("birth time: +" + stat.birthtime);
+
+            // 修改时间，Date 对象
+            console.log("modified time: " + stat.modisied);
+        }
+    }
+})
+```
+
+```stat()``` 也有一个对应的同步方法，```statSync()```
+
+
+#### 异步 和 同步
+
+在 ```fs``` 模块中，提供同步方法是为了方便使用，由于 node 环境执行的是服务器端代码，所以，绝大部分需要在服务器运行期反复执行业务逻辑的代码，必须使用**异步代码**，否则，同步代码在执行时期，服务器将停止响应，因为 ```JavaScript``` 只有一个执行线程
+
+服务器启动时如果需要读取配置文件，或者结束时需要写入到状态文件时，可以使用同步代码，因为这些代码只在启动和结束时执行一次，不影响服务器正常运行时的异步执行
+
+
+
+
+
+
