@@ -544,11 +544,11 @@ f.pipe(fs.createWriteStream("..."))
 
 #### http 服务器
 
-这些功能实际上都已经由 Node.js 自带的 http 模块完成了，应用程序并不直接和 HTTP 协议打交道，而是操作 http 模块提供的 request 和 response 对象
+这些功能实际上都已经由 ```Node.js``` 自带的 ```http``` 模块完成了，应用程序并不直接和 ```HTTP``` 协议打交道，而是操作 ```http``` 模块提供的 ```request``` 和 ```response``` 对象
 
-* request 对象封装了 HTTP 请求，我们调用 request 对象的属性和方法就可以拿到所有 HTTP 请求的消息
+* ```request``` 对象封装了 ```HTTP``` 请求，我们调用 ```request``` 对象的属性和方法就可以拿到所有 ```HTTP``` 请求的消息
 
-* response 对象封装了 HTTP 响应，我们操作 response 对象的方法，就可以把 HTTP 响应返回给浏览器
+* ```response``` 对象封装了 ```HTTP``` 响应，我们操作 ```response``` 对象的方法，就可以把 ```HTTP``` 响应返回给浏览器
 
 ```js
 "use strict"
@@ -581,9 +581,9 @@ console.log("Server is running at 9000 port");
 
 #### 文件服务器
 
-我们可以设定一个目录，然后让 Web 程序变成一个文件服务器，要实现这一点，我们只需要解析 request.url 中的路径，然后在本地找到对应的文件，把文件内容发送出去就可以了
+我们可以设定一个目录，然后让 ```Web``` 程序变成一个文件服务器，要实现这一点，我们只需要解析 ```request.url``` 中的路径，然后在本地找到对应的文件，把文件内容发送出去就可以了
 
-解析 URL 需要用到 Node.js 提供的 url 模块，它使用起来非常简单，通过 parse() 将一个字符串解析为一个 Url 对象：
+解析 ```URL``` 需要用到 ```Node.js``` 提供的 ```url``` 模块，它使用起来非常简单，通过 ```parse()``` 将一个字符串解析为一个 ```Url``` 对象：
 
 ```js
 "use strict"
@@ -614,7 +614,7 @@ Url {
 */
 ```
 
-处理本地文件目录需要使用 path 模块，它可以方便的构造目录：
+处理本地文件目录需要使用 ```path``` 模块，它可以方便的构造目录：
 
 ```js
 "use strict"
@@ -628,7 +628,7 @@ console.log(workDir);
 // 类似 C:\Users\Administrator\Desktop\node
 ```
 
-实现一个文件服务器，file_server.js
+实现一个文件服务器，```file_server.js```
 
 ```js
 "use strict"
@@ -684,7 +684,7 @@ server.listen(9000);
 console.log("Server is running at port 9000")
 ```
 
-如果我们直接请求根目录，例如 localhost:9000，会返回404，原因是程序识别出 HTTP 请求的不是文件，而是目录。下面这个修改后的例子则是，如果遇到请求的路径是目录，则自动在目录下依次搜索 index.html、default.html，如果找到了，就返回 HTML 文件的内容
+如果我们直接请求根目录，例如 ```localhost:9000```，会返回 ```404```，原因是程序识别出 ```HTTP``` 请求的不是文件，而是目录。下面这个修改后的例子则是，如果遇到请求的路径是目录，则自动在目录下依次搜索 ```index.html```、```default.html```，如果找到了，就返回 ```HTML``` 文件的内容
 
 ```js
 "use strict"
@@ -760,6 +760,47 @@ console.log("Server is running at port 9000")
 ```
 
 
+
+## crypto
+
+#### MD5 和 SHA1
+
+```MD5``` 是一种常用的哈希算法，用于给任意数据一个“签名”，这个签名通常是用一个十六进制的字符串表示：
+
+```js
+const crypto = require("crypto");
+
+const hash = crypto.createHash("md5");
+
+// 可以任意多次调用 update()
+hash.update("hello world");
+hash.update("hello world");
+
+console.log(hash.digest("hex"));  // 98f84fd484f8c2273f28cc645935f650
+```
+
+```update()``` 方法默认字符串编码为 ```UTF-8```，也可以传入 ```Buffer```
+
+如果要计算 ```SHA1```，只需要把 ```"md5"``` 换成 ```"sha1"```，就可以得到 ```sha1``` 的结果（可以使用更安全的 ```sha256``` 和 ```sha512```）
+
+
+#### Hmac
+
+```Hmac``` 算法也是一种哈希算法，它可以利用 ```MD5``` 和 ```SHA1``` 等哈希算法，不同的是，```Hmac``` 还需要一个密匙：
+
+```js
+const crypto = require("crypto");
+
+const hmac = crypto.createHmac("sha256", "my-key");
+
+hmac.update("hello world");
+hmac.update("hello nodejs");
+
+console.log(hmac.digest("hex"));  // cc4e9d1ae7996d102fe60cdf0eab9be8b3d093e4e594844e201bfd7374142850
+```
+
+只要密匙发生了变化，那么同样的输入数据也会得到不同的签名，因此，可以把 ```Hmac``` 理解为用随机数"增强"的哈希算法
+    
 
 
 
