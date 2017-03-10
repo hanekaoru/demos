@@ -534,3 +534,234 @@ f.pipe(fs.createWriteStream("..."))
 ```
 
 
+
+## http
+
+#### http 协议
+
+这个抽时间从头到尾的再梳理一遍
+
+
+#### http 服务器
+
+这些功能实际上都已经由 Node.js 自带的 http 模块完成了，应用程序并不直接和 HTTP 协议打交道，而是操作 http 模块提供的 request 和 response 对象
+
+* request 对象封装了 HTTP 请求，我们调用 request 对象的属性和方法就可以拿到所有 HTTP 请求的消息
+
+* response 对象封装了 HTTP 响应，我们操作 response 对象的方法，就可以把 HTTP 响应返回给浏览器
+
+```js
+"use strict"
+
+// 导入 http 模块
+var http = require("http");
+
+// 创建 http server，并传入回调函数
+var server = http.createServer(function (request, response) {
+
+    // 回调函数接收 request 和 response 对象
+    // 获得 HTTP 请求的 method 和 url
+    console.log(request.method + ": " + request.url);
+
+    // 将 HTTP 响应 200 写入 response，同时设置 Content-Type：text/html
+    response.writeHead(200, {"Content-Type": "text/html"});
+
+    // 将 HTTP 响应的 HTML 内容写入 response
+    response.end("<h1>hello world!</h1>")
+
+})
+
+// 让服务器监听 8080 端口
+server.listen(9000)
+
+console.log("Server is running at 9000 port");
+```
+
+
+
+#### 文件服务器
+
+我们可以设定一个目录，然后让 Web 程序变成一个文件服务器，要实现这一点，我们只需要解析 request.url 中的路径，然后在本地找到对应的文件，把文件内容发送出去就可以了
+
+解析 URL 需要用到 Node.js 提供的 url 模块，它使用起来非常简单，通过 parse() 将一个字符串解析为一个 Url 对象：
+
+```js
+"use strict"
+
+var url = require(url);
+
+console.log(url.parse("http://user:pass@host.com:8080/path/to/file?query=string#hash"))
+
+/**
+ * 
+ *
+Url {
+  protocol: "http:",
+  slashes: true,
+  auth: "user:pass",
+  host: "host.com:8080",
+  port: "8080",
+  hostname: "host.com",
+  hash: "#hash",
+  search: "?query=string",
+  query: "query=string",
+  pathname: "/path/to/file",
+  path: "/path/to/file?query=string",
+  href: "http://user:pass@host.com:8080/path/to/file?query=string#hash" 
+}
+
+ * 
+*/
+```
+
+处理本地文件目录需要使用 path 模块，它可以方便的构造目录：
+
+```js
+"use strict"
+
+var path = require("path");
+
+// 解析当前目录
+var workDir = path.resolve();
+
+console.log(workDir);
+// 类似 C:\Users\Administrator\Desktop\node
+```
+
+实现一个文件服务器，file_server.js
+
+```js
+"use strict"
+
+var fs = require("fs"),
+    url = require("url"),
+    path = require("path"),
+    http = require("http");
+
+// 从命令行参数获取 root 目录，默认是当前目录
+var root = path.resolve(process.argv[2] || ".");
+
+console.log("Static root dir: " + root)
+
+// 创建服务器
+var server = http.createServer(function (request, response) {
+
+    // 获得 URL 的 path
+    var pathname = url.parse(request.url).pathname;
+
+    // 获取对应的本地文件路径
+    var filepath = path.join(root, pathname);
+
+    // 获取文件状态
+    fs.stat(filepath, function (err, stats) {
+        if (!err && stats.isFile()) {
+            
+            // 没有错误并且文件存在
+            console.log("200 " + request.url);
+
+            // 发送 200 响应
+            response.writeHead(200);
+
+            // 将文件导向 response
+            // 没有必要手动读取文件内容。由于 response 对象本身是一个 Writable Stream
+            // 直接用 pipe() 方法就实现了自动读取文件内容并输出到 HTTP 响应
+            fs.createReadStream(filepath).pipe(response);
+
+        } else {
+
+            // 出错或者文件不存在
+            console.log("404 " + request.url);
+            
+            // 发送 404 响应
+            response.writeHead(404);
+            response.end("404 Not Found")
+        }
+    })
+})
+
+server.listen(9000);
+
+console.log("Server is running at port 9000")
+```
+
+如果我们直接请求根目录，例如 localhost:9000，会返回404，原因是程序识别出 HTTP 请求的不是文件，而是目录。下面这个修改后的例子则是，如果遇到请求的路径是目录，则自动在目录下依次搜索 index.html、default.html，如果找到了，就返回 HTML 文件的内容
+
+```js
+"use strict"
+
+var fs = require("fs"),
+    url = require("url"),
+    path = require("path"),
+    http = require("http");
+
+var filenames = ["default.html", "index.html"];
+
+// 默认当前目录
+var root = path.resolve(process.argv[2] || ".");
+
+var server = http.createServer(function (request, response) {
+
+    var filename = url.parse(request.url).pathname;
+    var filepath = path.join(root, filename);
+
+    fs.stat(filepath, function (err, stat) {
+        if (err) {
+            
+            console.log("不存在该文件！")
+            failure(response, "<h1>404 Not Found</h1>")
+
+        } else {
+
+            if (stat.isFile()) {
+                console.log("请求的是文件！");
+                success(response, filepath);
+            } else if (stat.isDirectory()) {
+                console.log("请求的是目录！");
+                isDir(response, filepath);
+            }
+
+        }
+    })
+})
+
+function isDir (response, dir) {
+    fs.readdir(dir, (err, files) => {
+        if (err) {
+            failure(response, "<h1>404 该目录不存在！</h1>");
+        } else {
+            console.log(files);
+
+            var names = files.filter(function (x) {
+                return x === "index.html" || x == "default.html"
+            })
+
+            if (names.length !== 0) {
+                success(response, path.join(dir, names[0]))
+            } else {
+                failure(response, "<h1>404 不存在首页！</h1>");
+            }
+        }
+    })
+}
+
+function success (response, filepath) {
+    response.writeHead(200, {"Content-Type": "text/html"});
+    fs.createReadStream(filepath).pipe(response);
+} 
+
+function failure (response, errString) {
+    response.writeHead(404, {"Content-Type": "text/html"});
+    response.end(errString);
+} 
+
+server.listen(9000)
+
+console.log("Server is running at port 9000")
+```
+
+
+
+
+
+
+
