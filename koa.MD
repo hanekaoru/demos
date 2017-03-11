@@ -22,4 +22,19 @@ app.listen(3000, function () {
 
 虽然 Express 的 API 很简单，但是它是基于 ES5 的语法，要实现异步代码，只有使用 **回调**，如果异步嵌套层次过多：
 
-待续...
+```js
+app.get('/test', function (req, res) {
+    fs.readFile('/file1', function (err, data) {
+        if (err) {
+            res.status(500).send('read file1 error');
+        }
+        fs.readFile('/file2', function (err, data) {
+            if (err) {
+                res.status(500).send('read file2 error');
+            }
+            res.type('text/plain');
+            res.send(data);
+        });
+    });
+});
+```
