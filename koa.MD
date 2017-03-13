@@ -23,18 +23,56 @@ app.listen(3000, function () {
 虽然 Express 的 API 很简单，但是它是基于 ES5 的语法，要实现异步代码，只有使用 **回调**，如果异步嵌套层次过多：
 
 ```js
-app.get('/test', function (req, res) {
-    fs.readFile('/file1', function (err, data) {
+app.get("/test", function (req, res) {
+    fs.readFile("/file1", function (err, data) {
         if (err) {
-            res.status(500).send('read file1 error');
+            res.status(500).send("read file1 error");
         }
-        fs.readFile('/file2', function (err, data) {
+        fs.readFile("/file2", function (err, data) {
             if (err) {
-                res.status(500).send('read file2 error');
+                res.status(500).send("read file2 error");
             }
-            res.type('text/plain');
+            res.type("text/plain");
             res.send(data);
         });
     });
 });
 ```
+
+虽然可以使用例如 async 这样的库来组织代码，但是利用回调来处理异步还是太麻烦
+
+
+## koa 1.0
+
+和 Express 相比，koa 1.0 使用 generator 来实现异步：
+
+```js
+var koa = require("koa");
+var app = koa();
+
+app.use("./test", function * () {
+    
+    yield doReadFile1();
+
+    var data = yield doReadFile2();
+
+    this.body = data;
+    
+})
+
+app.listen(3000)
+```
+
+利用 generator 实现异步是简单了不少，但是 generator 的本意并不是异步（promise 才是）
+
+ES7（草案，未来标准） 中引入了新的关键字 async 和 await，可以轻松把 function 变为异步模式：
+
+```js
+async function () {
+    var data = await fs.read("./test")
+}
+```
+
+#### koa 2
+
+待续
