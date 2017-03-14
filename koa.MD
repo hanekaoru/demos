@@ -1,10 +1,10 @@
 ## koa 
 
-koa 是 express 的下一代基于 Node.js 的 Web 框架
+```koa``` 是 ```express``` 的下一代基于 ```Node.js``` 的 ```Web``` 框架
 
 #### Express
 
-Express 是第一代最流行的 Web 框架，它对 Node.js 进行了封装：
+```Express``` 是第一代最流行的 ```Web``` 框架，它对 ```Node.js``` 进行了封装：
 
 ```js
 var express = require("express");
@@ -20,7 +20,7 @@ app.listen(3000, function () {
 })
 ```
 
-虽然 Express 的 API 很简单，但是它是基于 ES5 的语法，要实现异步代码，只有使用 **回调**，如果异步嵌套层次过多：
+虽然 ```Express``` 的 ```API``` 很简单，但是它是基于 ```ES5``` 的语法，要实现异步代码，只有使用 **回调**，如果异步嵌套层次过多：
 
 ```js
 app.get("/test", function (req, res) {
@@ -39,12 +39,12 @@ app.get("/test", function (req, res) {
 });
 ```
 
-虽然可以使用例如 async 这样的库来组织代码，但是利用回调来处理异步还是太麻烦
+虽然可以使用例如 ```async``` 这样的库来组织代码，但是利用回调来处理异步还是太麻烦
 
 
 ## koa 1.0
 
-和 Express 相比，koa 1.0 使用 generator 来实现异步：
+和 ```Express``` 相比，```koa 1.0``` 使用 ```generator``` 来实现异步：
 
 ```js
 var koa = require("koa");
@@ -63,9 +63,9 @@ app.use("./test", function * () {
 app.listen(3000)
 ```
 
-利用 generator 实现异步是简单了不少，但是 generator 的本意并不是异步（promise 才是）
+利用 ```generator``` 实现异步是简单了不少，但是 ```generator``` 的本意并不是异步（```promise``` 才是）
 
-ES7（草案，未来标准） 中引入了新的关键字 async 和 await，可以轻松把 function 变为异步模式：
+```ES7```（草案，未来标准） 中引入了新的关键字 ```async``` 和 ```await```，可以轻松把 ```function``` 变为异步模式：
 
 ```js
 async function () {
@@ -73,6 +73,57 @@ async function () {
 }
 ```
 
-#### koa 2
 
-待续
+## koa 2
+
+和 ```koa 1``` 相比，```koa 2``` 完全使用 ```Promise``` 并配合 ```async``` 来实现异步
+
+```js
+app.use(async (ctx, next) => {
+
+    await next();
+
+    var data = await doReadFile();
+
+    ctx.response.type = "text/plain";
+
+    ctx.response.body = data;
+    
+});
+```
+
+#### 创建 koa2 工程
+
+```js
+// 导入 koa 和 koa 1.x 不同，在 koa2 中，我们导入的是一个 class，因此用大写的 Koa 来表示
+const Koa = require("koa");
+
+// 创建一个 Koa 对象表示 web app 本身
+const app = new Koa();
+
+// 对于任何请求，app 将调用该异步函数处理请求
+app.use(async (ctx, next) => {
+
+    await next();
+
+    // 设置 response 的 Content-Type
+    ctx.response.type = "text/html";
+
+    // 设置 response 的内容
+    ctx.response.body = "<h1>hello world</h1>"
+
+})
+
+// 箭头 3000 端口
+app.listen(3000);
+
+console.log("app started at port 3000")
+```
+
+* 关于 ```ctx``` 参数，是由 ```koa``` 传入的封装了 ```request``` 和 ```response``` 的变量，我们可以通过它们来访问 ```request``` 和 ```response```
+
+* 关于 ```next``` 参数，是 ```koa``` 传入的将要处理的下一个异步函数
+
+上面的异步函数中，我们首先调用 ```await next()``` 来处理下一个异步函数，然后，设置 ```response``` 的 ```Content-Type``` 内容
+
+由 ```async``` 标记的函数称为 异步函数，在异步函数中，可以用 ```await``` 调用另一个 异步函数（这两个关键字将在 ```ES7``` 中引入）
