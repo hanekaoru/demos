@@ -132,4 +132,73 @@ console.log("app started at port 3000")
 
 
 
+#### koa 中间件（middleware）
+
+在来看看 ```koa``` 执行的核心逻辑代码：
+
+```js
+app.use(async (ctx, next) => {
+
+    await next();
+
+    ctx.response.type = "text/html";
+
+    ctx.response.body = "<h1></h1>"
+    
+})
+```
+
+每收到一个 ```http``` 请求，```koa``` 就会调用通过 ```app.use()``` 注册的 ```async``` 函数，并传入 ```ctx``` 和 ```next``` 参数，我们可以对 ```ctx``` 操作，并设置返回内容
+
+
+
+#### 为什么需要调用 await next()
+
+原因在于 ```koa``` 把很多 ```async``` 函数组成一个处理链，每个 ```async``` 函数都可以做一些自己的事情，然后使用 ```await next()``` 来调用下一个 ```async``` 函数
+
+例如，可以使用下面 3 个 ```middleware``` 组成处理链，依次打印日志，记录处理事件，输出 ```html```：
+
+```js
+app.use(async (ctx, next) => {
+    console.log(`${ctx.request.method} ${ctx.request.url}`);
+    await next();
+})
+
+app.use(async (ctx, next) => {
+    const start = new Date().getTime();
+    await next();
+    const ms = new Date().getTime() - start;
+    console.log(`Time: ${ms}ms`)
+})
+
+app.use(async (ctx, next) => {
+    await next();
+    ctx.response.type = "text/html"
+    ctx.response.body = "<h1></h1>"
+})
+```
+
+```middleware``` 的顺序很重要，也就是调用 ```app.use()``` 的顺序决定了 ```middleware``` 的顺序
+
+需要注意的是：如果其中一个 ```middleware``` 没有调用 ```await next()```，那么后续的 ```middleware``` 将不会在继续往下执行了
+
+例如一个检测用户权限的 ```middleware```：
+
+```js
+// 决定是否继续处理请求，还是直接返回 403 错误
+app.use(async (ctx, next) => {
+    if (await checkUserPermission(ctx)) {
+        await next();
+    } else {
+        ctx.response.status = 403;
+    }
+})
+```
+
+```ctx``` 对象还有一些简写的方法：
+
+* ```ctx.url``` 相当于 ```ctx.reaponse.url```
+
+* ```ctx.type``` 相当于 ```ctx.response.type```
+
 
