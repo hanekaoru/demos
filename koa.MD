@@ -278,6 +278,20 @@ console.log("app start at port 3000")
 
 ## 处理 POST 请求
 
+使用 ```router.get("/path", async fn)``` 处理的是 ```get``` 请求，如果要处理 ```POST``` 请求，可以使用 ```router.post("/path" async fn)```
+
+使用 ```POST``` 请求处理 ```URL``` 的时候，我们会遇到一个问题，```POST``` 请求通常会发送一个表单，或者 ```JSON```，它作为 ```request``` 的 ```body``` 发送，但无论是 ```Node.js``` 提供的原始 ```request``` 对象，还是 ```koa``` 提供的 ```request（ctx）```对象，都**不提供**解析 ```request``` 的 ```body``` 的功能
+
+所以我们需要引入另外一个中间件 ```koa-bodyparser``` 来解析原始的 ```request``` 请求，然后把解析后的参数绑定到 ```ctx.request.body``` 中
+
+```js
+// 然后在 app.js 中引入 koa-bodyparser
+const bodyParser = require("koa-bodyparser");
+
+// 然后在合适的位置调用
+app.use(bodyParser());
+```
+
 待续...
 
 
