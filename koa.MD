@@ -556,7 +556,28 @@ module.exports = {
 }
 ```
 
-详细的目录见：[koa-post](https://github.com/hanekaoru/koa-demo/tree/master/koa-post-reconsitution)
+详细的源码可以见：[koa-post](https://github.com/hanekaoru/koa-demo/tree/master/koa-post-reconsitution)
+
+#### 关于 controller.js 中最后返回 router.routes()
+
+之前我们相关 ```url``` 处理都放在 ```app.js``` 里面，使用的时候是：
+
+```js
+router.get(...)
+router.post(...)
+
+app.use(router.routes());
+```
+
+而在重构之后，我们在 ```app.js``` 中使用的话就是：
+
+```js
+app.use(controller());
+```
+
+相关的 ```router.get()``` 和 ```router.post()``` 已经在 ```controller.js``` 里面处理完成了
+
+然后 ```contorller()``` 将之后的 ```router.routes()``` 返回给 ```app.js```
 
 
 
