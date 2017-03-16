@@ -1,3 +1,7 @@
+#### 相关 demo 可参见：[koa-demo 汇总](https://github.com/hanekaoru/koa-demo)
+
+----
+
 ## koa 
 
 ```koa``` 是 ```express``` 的下一代基于 ```Node.js``` 的 ```Web``` 框架
@@ -237,7 +241,7 @@ app.use(async (ctx, next) => {
 
 #### koa-router
 
-为了处理 ```URL```，我们引入 ```kos-router``` 这个 ```middleware```，它负责处理 ```URL``` 映射：
+为了处理 ```URL```，我们引入 ```koa-router``` 这个 ```middleware```，它负责处理 ```URL``` 映射：
 
 ```js
 const Koa = require("koa");
@@ -292,7 +296,267 @@ const bodyParser = require("koa-bodyparser");
 app.use(bodyParser());
 ```
 
-待续...
+由于 ```middleware``` 的顺序很重要，这个 ```koa-bodyparser``` 必须在 ```router``` 之前被注册到 ```app``` 对象上面
+
+现在我们就可以处理 ```post``` 请求了：
+
+```js
+// 相关依赖
+const Koa = require("koa");
+const router = require("koa-router")();
+const bodyParser = require("koa-bodyparser");
+
+const app = new Koa();
+
+// 必须在 router 之前被注册到 app 对象上
+app.use(bodyParser());
+
+// 生成表单，提交到 /signin 下
+router.get("/", async (ctx, next) => {
+    ctx.response.body = `<h1>Index</h1>
+        <form action="/signin" method="post">
+            <p>Name: <input name="name" value="koa"></p>
+            <p>Password: <input name="password" type="password"></p>
+            <p><input type="submit" value="Submit"></p>
+        </form>`;
+})
+
+// 处理表单请求
+router.post("/signin", async (ctx, next) => {
+
+    // 如果该字段不存在，默认值设置为 ""
+    var name = ctx.request.body.name || "",
+        password = ctx.request.body.password || "";
+    console.log(`signin with name: ${name}, password: ${password}`);
+
+    if (name == "koa" && password == "123") {
+        ctx.response.body = `<h1>hello, ${name}</h1>`
+    } else {
+        ctx.response.body = `try again`
+    }
+    
+})
+
+
+app.use(router.routes());
+
+app.listen(3000);
+
+console.log("app start at port 3000")
+```
+
+类似的 ```put```，```delete```，```head``` 请求也可以由 ```router``` 来处理
+
+
+#### 重构
+
+现在，我们可以处理不同的 ```URL``` 了，但是所有的逻辑都堆在 ```app.js``` 中，随着 ```URL``` 越来越多，```app.js``` 就会越来越长
+
+我们可以让 ```URL``` 处理函数集中到某个 ```js``` 文件，然后让 ```app.js``` 自动导入所有处理 ```URL``` 的函数，这样，代码一分离，逻辑就显得清楚了：
+
+```js
+// index.js 
+var fn_index = async (ctx, next) => {
+    ctx.response.body = `<h1>Index</h1>
+        <form action="/signin" method="post">
+            <p>Name: <input name="name" value="koa"></p>
+            <p>Password: <input name="password" type="password"></p>
+            <p><input type="submit" value="Submit"></p>
+        </form>`;
+}
+
+var fn_signin = async (ctx, next) => {
+    var name = ctx.request.body.name || "",
+        password = ctx.request.body.password || "";
+    console.log(`signin with name: ${name}, password: ${password}`);
+
+    if (name == "koa" && password == "123") {
+        ctx.response.body = `<h1>hello, ${name}</h1>`
+    } else {
+        ctx.response.body = `try again`
+    }
+}
+
+// 通过 module.exports 把两个 url 处理函数暴露出去
+module.exports = {
+    "GET /": fn_index,
+    "POST /signin": fn_signin 
+}
+```
+
+
+
+```js
+// hello.js
+var fn_hello = async (ctx, next) => {
+    var name = ctx.params.name;
+    ctx.response.body = `<h1>hello, ${name}</h1>`
+}
+
+module.exports = {
+    "GET /hello/:name": fn_hello
+}
+```
+
+
+
+```js
+// app.js
+// 修改 app.js 让它自动扫描 controllers 目录，找到所有 js 文件导入，然后注册每个 url
+
+// 先导入 fs 模块，然后使用 readdirSync 列出文件
+var fs = require("fs");
+
+// 这里可以使用 async，因为启动的时候只运行一次，不存在性能问题
+var files = fs.readdirSync(__dirname + "/controllers");
+
+// 过滤 .js 文件
+var js_file = files.filter( (f) => {
+    return f.endsWith(".js");
+})
+
+// 处理每个 js 文件
+for (var f of js_file) {
+
+    console.log(`process controllers: ${f} ...`)
+
+    // 导入 js 文件
+    let mapping = require(__dirname + "/controllers/" + f);
+
+    for (var url in mapping) {
+
+        if (url.startsWith("GEt ")) {
+
+            // 如果 url 类似 "GET xxx"
+            var path = url.substring(4);
+            router.get(path, mapping[url]);
+            console.log(`register URL mapping: GET ${path}`);
+
+        } else if (url.startsWith("POST ")) {
+
+            // 如果 URL 类似 "POST xxx"
+            var path = url.substring(5);
+            router.post(path, mapping[url]);
+            console.log(`register URL mapping: POST ${path}`);
+
+        } else {
+
+            // 无效的 url
+            console.log(`invalid URL: ${url}`);
+            
+        }
+    }
+}
+```
+
+
+#### Controller Middleware
+
+现在我们来重构和整合上面的代码，把扫描 ```controllers``` 目录和创建 ```router``` 的代码从 ```app.js``` 中提取出来，作为一个简单的 ```middleware``` 来使用，命名为 ```controller.js```
+
+这样一来，我们的 ```app.js``` 中的代码已经十分精简了，所有处理 ```URL``` 的函数按功能组存放在 ```controllers``` 目录
+
+```js
+// app.js
+const Koa = require("koa");
+const bodyParser = require("koa-bodyparser");
+const controller = require("./controller");
+const app = new Koa();
+
+app.use(async (ctx, next) => {
+    console.log(`Process ${ctx.request.method} ${ctx.request.url}...`);
+    await next();
+});
+
+app.use(bodyParser());
+
+app.use(controller());
+
+app.listen(3000);
+console.log("app started at port 3000...");
+```
+
+```js
+// controller.js
+const fs = require("fs");
+
+function addMapping (router, mapping) {
+    for (var url in mapping) {
+        if (url.startsWith("GET ")) {
+            var path = url.substring(4);
+            router.get(path, mapping[url]);
+            console.log(`register URL mapping: GET ${path}`);
+        } else if (url.startsWith("POST ")) {
+            var path = url.substring(5);
+            router.post(path, mapping[url]);
+            console.log(`register URL mapping: POST ${path}`);
+        } else {
+            console.log(`invalid URL: ${url}`);
+        }
+    }
+}
+
+function addControllers (router, dir) {
+    fs.readdirSync(__dirname + "/" + dir).filter((f) => {
+        return f.endsWith(".js")
+    }).forEach((f) => {
+        console.log(`process controlles: ${f}...`)
+        let mapping = require(__dirname + "/" + dir + "/" + f)
+        addMapping(router, mapping)
+    })
+}
+
+module.exports = function (dir) {
+    let controllers_dir = dir || "controllers",
+        router = require("koa-router")();
+    addControllers(router, controllers_dir);
+    return router.routes();
+}
+```
+
+```js
+// controller / controller.js
+var fn_index = async (ctx, next) => {
+    ctx.response.body = `<h1>Index</h1>
+        <form action="/signin" method="post">
+            <p>Name: <input name="name" value="koa"></p>
+            <p>Password: <input name="password" type="password"></p>
+            <p><input type="submit" value="Submit"></p>
+        </form>`;
+};
+
+var fn_signin = async (ctx, next) => {
+    var
+        name = ctx.request.body.name || "",
+        password = ctx.request.body.password || "";
+    console.log(`signin with name: ${name}, password: ${password}`);
+    if (name === "koa" && password === "12345") {
+        ctx.response.body = `<h1>Welcome, ${name}!</h1>`;
+    } else {
+        ctx.response.body = `<h1>Login failed!</h1>
+        <p><a href="/">Try again</a></p>`;
+    }
+};
+
+module.exports = {
+    "GET /": fn_index,
+    "POST /signin": fn_signin
+};
+```
+
+```js
+// controller / hello.js
+var fn_hello = async (ctx, next) => {
+    var name = ctx.params.name;
+    ctx.response.body = `<h1>hello, ${name}</h1>`
+}
+
+module.exports = {
+    "GET /hello/:name": fn_hello
+}
+```
+
+详细的目录见：[koa-post](https://github.com/hanekaoru/koa-demo/tree/master/koa-post-reconsitution)
 
 
 
