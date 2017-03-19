@@ -539,7 +539,7 @@ f.pipe(fs.createWriteStream("..."))
 
 #### http 协议
 
-这个抽时间从头到尾的再梳理一遍
+填坑，详细见：[http协议](https://github.com/hanekaoru/http-protocol/blob/master/README.md)
 
 
 #### http 服务器
