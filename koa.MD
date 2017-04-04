@@ -708,5 +708,5 @@ async (ctx, next) => {
 
 * Model ```model``` 是用来传递给 ```view``` 的，这样在 ```view``` 替换变量的时候，就可以从 ```model``` 中提取相应的数据
 
-
+详细源码见 [use-koa](https://github.com/hanekaoru/koa-login)
 
