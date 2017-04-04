@@ -1,4 +1,4 @@
-#### 相关 demo 可参见：[koa-demo 汇总](https://github.com/hanekaoru/koa-demo)
+相关源码可参见：[koa-demo](https://github.com/hanekaoru/koa-demo)
 
 ----
 
@@ -702,7 +702,11 @@ async (ctx, next) => {
 
 这就是传说中的 MVC：Model - View - Controller（模型 - 视图 - 控制器）
 
-待续...
+* Controller 负责业务逻辑，比如检查用户名是否存在，取出用户信息等
+
+* View 包含变量的 ```{{ name }}``` 模版就是视图，负责显示逻辑（最终输出就是 ```html```）
+
+* Model ```model``` 是用来传递给 ```view``` 的，这样在 ```view``` 替换变量的时候，就可以从 ```model``` 中提取相应的数据
 
 
 
