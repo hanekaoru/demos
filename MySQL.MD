@@ -27,4 +27,6 @@ mysql> show databases;
 
 ## ORM
 
-待续
+在使用 ```node.js``` 来处理关系型操作数据库时，为了方便，通常都会选择一个合适的 ORM（Object Relationship Model）框架。毕竟直接操作 ```SQL``` 比较繁琐，通过 ```ORM``` 框架，我们可以使用面向对象的方式来操作表，这里主要介绍 ```Sequelize```
+
+更多关于 ```Sequelize``` 内容可参考：[Sequelize 和 MySQL 对照](https://segmentfault.com/a/1190000003987871)
