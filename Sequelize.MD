@@ -28,3 +28,29 @@ co(function* () {
 ```
 
 ```Sequelize``` 的操作都会返回一个 ```Promise```，在 ```co``` 的框架里面可以直接进行 ```yield```
+
+
+## 连接数据库
+
+```js
+var sequelize = new Sequelize(
+    "user", // 数据库名
+    "root",   // 用户名
+    "",   // 用户密码
+    {
+        "dialect": "mysql",  // 数据库使用 mysql
+        "host": "localhost", // 数据库服务器 ip
+        "port": 3000,        // 数据库服务器端口
+        "define": {
+            // 字段以下划线（_）来分割（默认是驼峰命名风格）
+            "underscored": true
+        }
+    }
+);
+```
+
+
+## 定义表单
+
+
+
