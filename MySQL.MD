@@ -50,7 +50,7 @@ Pet.findAll().then(function (pets) {
 可以改用 ES7 的 await() 来调用：
 
 ```js
-var pets = await pets.findAll();
+var pets = await Pet.findAll();
 ```
 
 但是 await 有一个限制，必须在 async 函数中调用，所以修改为：
