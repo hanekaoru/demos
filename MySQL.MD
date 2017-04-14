@@ -242,4 +242,5 @@ Pet.create({
 需要注意的是：```findAll()``` 方法可以接收 ```where```，```order```这些参数，这和将要生成的 ```SQL``` 语句是对应的
 
 
+[源码](https://github.com/hanekaoru/koa-demo/tree/master/koa-Sequelize)
 
