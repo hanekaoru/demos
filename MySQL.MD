@@ -62,6 +62,46 @@ var pets = await Pet.findAll();
 ```
 
 
+#### 实战
+
+我们可以在 ```test``` 数据库中创建一个 ```pets``` 表：
+
+```js
+grant all privileges on test.* to 'www'@'%' identified by 'www';
+
+use test;
+
+create table pets (
+    id varchar(50) not null,
+    name varchar(100) not null,
+    gender bool not null,
+    birth varchar(10) not null,
+    createdAt bigint not null,
+    updatedAt bigint not null,
+    version bigint not null,
+    primary key (id)
+) engine=innodb;
+```
+
+* 第一条 ```grant``` 命令是创建 ```mysql``` 的用户名和口令，并赋予操作 ```test``` 数据库的所有权限
+
+* 第二条 ```use``` 命令把当前库切换为 ```test```
+
+* 创建 ```pets``` 表
+
+然后新建 ```config.js``` 用以配置 ```mysql```
+
+```js
+var config = {
+    database: "test", // 使用的数据库名
+    username: "root",
+    password: "root", 
+    host: "localhost", // 主机名
+    port: 3306 // mysql 默认 3306
+}
+
+module.exports = config;
+```
 
 
 
