@@ -40,20 +40,20 @@ mysql> show databases;
 // 因为 Sequelize 返回的对象是 Promise，所以我们可以用 then() 和 catch() 分别异步响应成功和失败
 Pet.findAll().then(function (pets) {
     for (let pet in pets) {
-        console.log(`${pet.id}: ${prt.name}`)
+        console.log(`${pet.id}: ${pet.name}`)
     }
 }).catch(function (err) {
     // err
 })
 ```
 
-可以改用 ES7 的 await() 来调用：
+可以改用 ES7 的 ```await()``` 来调用：
 
 ```js
 var pets = await Pet.findAll();
 ```
 
-但是 await 有一个限制，必须在 async 函数中调用，所以修改为：
+但是 ```await``` 有一个限制，必须在 ```async``` 函数中调用，所以修改为：
 
 ```js
 (async () => {
