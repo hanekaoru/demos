@@ -29,4 +29,42 @@ mysql> show databases;
 
 在使用 ```node.js``` 来处理关系型操作数据库时，为了方便，通常都会选择一个合适的 ORM（Object Relationship Model）框架。毕竟直接操作 ```SQL``` 比较繁琐，通过 ```ORM``` 框架，我们可以使用面向对象的方式来操作表，这里主要介绍 ```Sequelize```
 
-更多关于 ```Sequelize``` 内容可参考：[Sequelize 和 MySQL 对照](https://segmentfault.com/a/1190000003987871)
+更多关于 ```Sequelize``` 内容可参考：[Sequelize](https://github.com/hanekaoru/full-stack/blob/master/Sequelize.MD)
+
+选择 ```Sequelize``` 的原因：只要 ```API``` 返回 ```Promise```，就可以用 ```await``` 调用
+
+
+#### 用 Sequelize 查询 pets 表
+
+```js
+// 因为 Sequelize 返回的对象是 Promise，所以我们可以用 then() 和 catch() 分别异步响应成功和失败
+Pet.findAll().then(function (pets) {
+    for (let pet in pets) {
+        console.log(`${pet.id}: ${prt.name}`)
+    }
+}).catch(function (err) {
+    // err
+})
+```
+
+可以改用 ES7 的 await() 来调用：
+
+```js
+var pets = await pets.findAll();
+```
+
+但是 await 有一个限制，必须在 async 函数中调用，所以修改为：
+
+```js
+(async () => {
+    var pets = await Pet.findAll()
+})();
+```
+
+
+
+
+
+
+
+
