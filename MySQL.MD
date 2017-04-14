@@ -106,5 +106,140 @@ module.exports = config;
 
 
 
+下面就可以在 ```app.js``` 中操作数据库了，在操作之前需要两件准备工作：
+
+第一步，创建一个 ```sequelize``` 对象实例：
+
+```js
+const Sequelize = require("sequelize");
+const config = require("./config");
+
+var sequelize = new Sequelize(config.database, config.username, config.password, {
+    host: config.host,
+    dialect: "mysql",
+    pool: {
+        max: 5,
+        min: 0,
+        idle: 30000
+    }
+});
+```
+
+第二步，定义模型 ```Pet```，告诉 ```Sequelize``` 如何映射数据库表：
+
+```js
+var Pet = sequelize.define("pet", {
+    id: {
+        type: Sequelize.STRING(50),
+        primaryKey: true
+    },
+    name: Sequelize.STRING(100),
+    gender: Sequelize.BOOLEAN,
+    birth: Sequelize.STRING(10),
+    createdAt: Sequelize.BIGINT,
+    updatedAt: Sequelize.BIGINT,
+    version: Sequelize.BIGINT
+}, {
+        timestamps: false
+    });
+```
+
+* 使用 ```sequelize.define()``` 定义 ```model``` 的时候，传入 ```pet```，默认的表名就是 ```pets```
+
+* 第二个参数指定列名和数据类型，如果是主键，需要更详细的指定
+
+* 第三个参数是额外配置，我们传入 ```{timestamps: false }``` 是为了关闭 ```Sequelize``` 的自动添加 ```timestamp``` 功能（自动化）
+
+然后添加数据，有两种方式，第一种是使用 ```Promise```：
+
+```js
+var now = Date.now();
+
+Pet.create({
+    id: "g-" + now,
+    name: "abc",
+    gander: false,
+    birth: "2002-02-02",
+    createdAt: now,
+    updatedAt: now,
+    version: 0
+}).then(function (p) {
+    console.log(`created:` + JSON.stringify(p))
+}).catch(function (err) {
+    console.log(`err: ` + err)
+})
+```
+
+第二种方式是使用 ```await```：
+
+```js
+(async () => {
+    var dog = await PageTransitionEvent.create({
+        id: 'd-' + now,
+        name: 'def',
+        gender: false,
+        birth: '2003-03-03',
+        createdAt: now,
+        updatedAt: now,
+        version: 0
+    })
+    console.log(`created: ` + JSON.stringify(dog))
+})();
+```
+
+查询数据：
+
+```js
+(async () => {
+    var pets = await pets.findAll({
+        where: {
+            name: "abc"
+        }
+    });
+    console.log(`find ${pets.length} pets`);
+    for (let p of pets) {
+        console.log(JSON.stringify(p));
+    }
+})()
+```
+
+更新数据：
+
+```js
+(async () => {
+    var p = await queryFromSomewhere();
+    p.gender = true;
+    p.updatedAt = Date.now();
+    p.version ++;
+    await p.save();
+})()
+```
+
+删除数据：
+
+```js
+(async () => {
+    var p = await queryFromSomewhere();
+    await p.destory();
+})()
+```
+
+
+#### model
+
+我们把通过 ```sequelize.define()``` 返回的 ```Pet``` 称为 ```Model```，它表示一个数据模型
+
+通过 ```Pet.findAll()``` 返回的一个或一组对象称为 ```Model``` 实例，每个实例都可以直接通过 ```JSON.stringify``` 序列化为 ```JSON``` 字符串，只是多了一些由 ```Sequelize``` 添加的方法，比如 ```save()```（更新） 和 ```destory()```（删除）
+
+步骤总结如下：
+
+* 通过某个 ```model``` 对象的 ```findAll()``` 方法获取实例
+
+* 如果要更新实例，先对实例属性赋予新值，在调用 ```save()``` 方法
+
+* 如果要删除实例，直接调用 ```destory()``` 方法
+
+需要注意的是：```findAll()``` 方法可以接收 ```where```，```order```这些参数，这和将要生成的 ```SQL``` 语句是对应的
+
 
 
