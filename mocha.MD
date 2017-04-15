@@ -117,5 +117,24 @@ if ("1 + 1 应该为 2", function () { })
 $ mocha --recursive
 ```
 
+## 异步
+
+```mocha``` 默认每个测试用例最多执行 ```2000``` 毫秒，这时可以使用 ```-t``` 或者 ```--timeout``` 参数
+
+```js
+if ("测试于 5000 毫秒后结束", (done) => {
+    var x = true;
+    var f = function () {
+        x = false;
+        expect(x).to.be.not.ok;
+        done()  // 通知 mocha 测试结束
+    };
+    setTimeout(f, 4000)
+})
+
+// $ mocha -t 5000 timeout.test.js
+```
+
+
  
  
