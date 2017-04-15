@@ -52,4 +52,58 @@ describe("测试 add 函数", function () {
 
 ```it``` 块称为 "测试用例"，表示一个单独的测试，是测试的最小单位，第一个参数是测试用例的名称，第二个参数是一个实际执行的函数
 
+
+## 断言库
+
+```mocha``` 本身不带断言库，所以必须先引入断言库
+
+```js
+var expect = require("chai").expect;
+
+...
+
+// 使用
+expect(add(1, 1)).to.be.equal(2);
+```
+
+这里引入的是 ```chai```：
+
+```js
+// 相等或不相等
+expect(4 + 5).to.be.equal(9);
+expect(4 + 5).to.be.not.equal(10);
+expect(foo).to.be.deep.equal({ bar: "baz" });
+
+// 布尔值为true
+expect("everthing").to.be.ok;
+expect(false).to.not.be.ok;
+
+// typeof
+expect("test").to.be.a("string");
+expect({ foo: "bar" }).to.be.an("object");
+expect(foo).to.be.an.instanceof(Foo);
+
+// include
+expect([1, 2, 3]).to.include(2);
+expect("foobar").to.contain("foo");
+expect({ foo: "bar", hello: "universe" }).to.include.keys("foo");
+
+// empty
+expect([]).to.be.empty;
+expect("").to.be.empty;
+expect({}).to.be.empty;
+
+// match
+expect("foobar").to.match(/^foo/); 
+```
+
+如果 expect 断言不成立，就会抛出一个错误，事实上，只要不抛出错误，测试用例就算通过：
+
+```js
+// 内部没有任何代码，但是由于没有抛出错误，所以还是会通过
+if ("1 + 1 应该为 2", function () { })
+```
+
+
+ 
  
