@@ -17,3 +17,39 @@
 * 可以自动运行所有测试，也可以只运行特定的测试
 
 * 可以支持 ```before```，```after```，```beforeEach``` 和 ```afterEach``` 来编写初始化代码
+
+
+## 测试脚本
+
+例如一个 ```add``` 函数：
+
+```js
+function add (x, y) {
+    return x + y;
+}
+
+module.exports = add;
+```
+
+要测试这个加法模块是否正确，就需要写测试脚本
+
+通常，测试脚本与所要测试的源码脚本同名，但是其后缀为 ```test.js```：
+
+```js
+var add = require("./add.js");
+var expect = require("chai").expect;
+
+describe("测试 add 函数", function () {
+	it("1 加 1 应该为 2", function () {
+		expect(add(1, 1)).to.be.equal(2);
+	});
+});
+```
+
+测试脚本应该包括一个或多个 ```describe``` 块，每个 ```describe``` 块应该包括一个或多个 ```it``` 块
+
+```describe``` 块称为 "测试套件"，表示一组相关的测试，它是一个函数，第一个参数是测试套件的名称，第二个参数是一个实际执行的函数
+
+```it``` 块称为 "测试用例"，表示一个单独的测试，是测试的最小单位，第一个参数是测试用例的名称，第二个参数是一个实际执行的函数
+
+ 
