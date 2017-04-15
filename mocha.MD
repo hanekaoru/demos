@@ -135,6 +135,37 @@ if ("测试于 5000 毫秒后结束", (done) => {
 // $ mocha -t 5000 timeout.test.js
 ```
 
+* 关于 ```done()```
+
+```it``` 块执行的时候，传入一个 ```done``` 参数，当测试结束的时候，必须显式调用这个函数，告诉 ```mocha``` 测试结束了。否则会一直等到超时报错
+
+另一个例子，```async.test.js```：
+
+```js
+it("异步请求应该返回一个对象", function (done) {
+    request
+        .get("https://api.github.com")
+        .end(function (err, res) {
+            expect(res).to.be.an("object");
+            done();
+        });
+});
+
+// $ mocha -t 10000 async.test.js
+```
+
+mocha 内置对 Promise 的支持，允许直接返回 Promise，等到它的状态改变，再执行断言，而不用显式调用 done 方法
+
+```js
+it ("异步请求返回一个对象", function () {
+    return fetch("http://api.github.com")
+        .then(function (res) {
+            return res.json();
+        }).then(function (json) {
+            expect(json).to.be.an("object");
+        })
+})
+```
 
  
  
