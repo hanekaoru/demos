@@ -39,3 +39,67 @@ socket.onopen = function (event) {
     socket.close()
 }
 ```
+
+* ```ws``` 表示 ```WebSocket``` 协议，参数为 ```url```（以 ```ws``` 开头）
+
+* ```onopen```，```onclose```，```onmessage``` 方法把事件连接到 Socket 实例上
+
+* ```onmessage``` 事件提供了一个 ```data``` 属性，它可以包含消息的 ```body``` 部分（消息的 ```body``` 部分必须为一个字符串，可以进行 序列化/反序列化，以便传递更多的数据）
+
+
+## WebSocket 与 Socket.IO
+
+```Socket.IO``` 是 ```node.js``` 的一个模块，它是通过 ```WebSocket``` 进行通信的一种简单方式，```Socket.IO``` 使用检测功能来判断是否建立 ```WebSocket``` 连接，或者是 ```AJAX long-polling``` 连接，或 ```Flash``` 等。可快速创建实时的应用程序
+
+一个简单的示例：
+
+```html
+// 客户端 index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Socket.io</title>
+</head>
+<body>
+    <h1>I Am Socket.IO</h1>
+    <script src="../socket.io.js"></script>
+    <script>
+        var socket=io.connect("ws://localhost:8000");
+    </script>
+</body>
+</html>
+```
+
+```js
+// 服务端 index.js
+var http = require("http");
+var fs = require("fs");
+
+var sever = http.createServer(function (req, res) {
+    fs.readFile("./index.html", function (err, data) {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(data, "utf-8");
+    });
+}).listen(3000);
+
+// 为了在服务器上加入 Socket.io 的功能，必须将 Socket.IO 库包括进来，而后附加到服务器上
+var io = require("socket.io").listen(sever);
+
+// 在启动了服务器的 Socket.io 之后，用于初始化
+io.socket.on("connection", function (socket) {
+
+    console.log("user conneted");
+
+    socket.on("disconnect", function () {
+        console.log("user disconnet");
+    });
+
+});
+```
+
+
+
+
+
+
