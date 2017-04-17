@@ -1,3 +1,5 @@
+相关源码见：[WebSocket-demos](https://github.com/hanekaoru/WebSocket-demos)
+
 ## WebSocket
 
 ```WebSocket``` 是 ```HTML5``` 新增的协议，它的目的是在浏览器和服务器之间建立一个不受限的双向通信的通道，比如说服务器可以在任意时刻发送消息给浏览器
@@ -6,4 +8,34 @@
 
 为了建立一个 ```WebSocket``` 连接，客户端浏览器首先要向服务器发起一个 ```HTTP``` 请求，这个请求和通常的 ```HTTP``` 请求不同，包含了一些附加头信息，其中附加头信息 ```"Upgrade: WebSocket"``` 表明这是一个申请协议升级的 ```HTTP``` 请求，服务器端解析这些附加的头信息然后产生应答信息返回给客户端，客户端和服务器端的 ```WebSocket``` 连接就建立起来了，双方就可以通过这个连接通道自由的传递信息，并且这个连接会持续存在直到客户端或者服务器端的某一方主动的关闭连接。
 
-[源码](https://github.com/hanekaoru/WebSocket-demos)
+
+## WebSocket API
+
+一个简单的实例
+
+大致流程为：打开一个连接，为连接创建事件监听器，断开连接，消息时间，发送消息返回到服务器，关闭连接
+
+```js
+// 创建一个 Socket 实例
+var socket = new WebSocket("ws://localhost:8080");
+
+// 打开 Socket
+socket.onopen = function (event) {
+
+    // 发送一个初始化消息
+    socket.send("socket init")
+
+    // 监听消息
+    socket.onmessage = function (event) {
+        console.log("Message listener")
+    }
+
+    // 监听 socket 的关闭
+    socket.onclose = function (event) {
+        console.log("closed")
+    }
+
+    // 关闭
+    socket.close()
+}
+```
