@@ -4,6 +4,10 @@
 
 [RESTful API 设计指南](http://www.ruanyifeng.com/blog/2014/05/restful_api.html)
 
+----
+
+源码见：[koa-rest](https://github.com/hanekaoru/koa-demo/tree/master/koa-rest)
+
 ## REST
 
 ```REST``` 就是一种设计 ```API``` 的模式。最常用的数据格式是 ```JSON```。由于 ```JSON``` 能直接被 ```JavaScript``` 读取，所以，以 ```JSON``` 格式编写的 ```REST``` 风格的 ```API``` 具有简单、易读、易用的特点
