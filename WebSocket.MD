@@ -98,6 +98,37 @@ io.socket.on("connection", function (socket) {
 });
 ```
 
+#### 向服务器发送数据到客户端
+
+```js
+io.sockets.on("connection", function (socket) {
+    // 向客户端发送消息
+    socket.emit("message", { text:"you have connected" });
+});
+```
+
+只要客户端连接，它就将数据发送给每一个新的客户端，而如果想给当前所有的客户端都发送消息，则需要发送广播消息
+
+```js
+io.sockets.on("connection", function (socket) {
+
+    // 单个客户端发送消息
+    socket.emit("message", { text: "A new user has connected" });
+
+    // 广播消息给客户端
+    socket.broadcast.emit("massage", { text: "A new user has connected" });
+});
+```
+
+接下来需要做的就是客户端先连接 Socket.io 服务器，然后侦听在 "message" 事件上接收的数据，然后做出响应
+
+```js
+var socket = io.connect("ws://localhost:8080");
+socket.on("message", function (data) {
+    console.log(`${data.text}`);
+});
+```
+
 
 
 
