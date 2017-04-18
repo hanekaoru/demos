@@ -43,3 +43,50 @@ ctx.rest({
 ```
 
 就可以完成 ```REST``` 请求的处理
+
+
+## 错误处理
+
+主要有两部分
+
+* 一类是 ```403```， ```404```， ```500``` 等 ```HTTP``` 请求可能发生的错误
+
+* 一类是业务逻辑的错误（比如不合法的手机号码）
+
+修改一下之前的 ```rest()``` 方法，让其直接用 ```throw``` 语句抛出错误，让 ```middleware``` 去处理错误
+
+```js
+module.exports = {
+    APIError: function (code, message) {
+        this.code = code || "internal:unknown_error";
+        this.message = message || "";
+    },
+    restify: (pathPrefix) => {
+        pathPrefix = pathPrefix || "/api/";
+        return async (ctx, next) => {
+            if (ctx.request.path.startsWith(pathPrefix)) {
+                ctx.rest = (data) => {
+                    ctx.response.type = "application/json";
+                    ctx.response.body = data;
+                }
+                try {
+                    await next();
+                } catch (e) {
+                    // 返回错误
+                    ctx.response.status = 400;
+                    ctx.response.type = "application/json";
+                    ctx.response.body = {
+                        code: e.code || "internal:unknown_error",
+                        message: e.message || ""
+                    };
+                }
+            } else {
+                await next();
+            }
+        };
+    }
+};
+```
+
+
+
